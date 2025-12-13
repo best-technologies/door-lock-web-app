@@ -1,34 +1,41 @@
 "use client";
 
 import Link from "next/link";
-
-interface AttendanceRecord {
-  date: string;
-  userId: string;
-  name: string;
-  checkIn: string;
-  checkOut: string | null;
-  status: "present" | "late" | "absent";
-}
+import { TodayAttendance, AttendanceStatus } from "@/types/api";
 
 interface AttendanceOverviewProps {
-  records: AttendanceRecord[];
+  records: TodayAttendance[];
 }
 
 export default function AttendanceOverview({ records }: AttendanceOverviewProps) {
-  const getStatusBadge = (status: string) => {
-    const statusClasses = {
-      present: "bg-success-100 text-success-700",
-      late: "bg-orange-100 text-orange-700",
-      absent: "bg-danger-100 text-danger-700",
+  const getStatusBadge = (status: AttendanceStatus) => {
+    const statusClasses: Record<AttendanceStatus, string> = {
+      [AttendanceStatus.PRESENT]: "bg-success-100 text-success-700",
+      [AttendanceStatus.LATE]: "bg-orange-100 text-orange-700",
+      [AttendanceStatus.ABSENT]: "bg-danger-100 text-danger-700",
+      [AttendanceStatus.EARLY_DEPARTURE]: "bg-warning-100 text-warning-700",
+      [AttendanceStatus.HALF_DAY]: "bg-info-100 text-info-700",
+      [AttendanceStatus.HOLIDAY]: "bg-primary-100 text-primary-700",
+      [AttendanceStatus.WEEKEND]: "bg-gray-100 text-gray-700",
     };
+    
+    const statusLabels: Record<AttendanceStatus, string> = {
+      [AttendanceStatus.PRESENT]: "Present",
+      [AttendanceStatus.LATE]: "Late",
+      [AttendanceStatus.ABSENT]: "Absent",
+      [AttendanceStatus.EARLY_DEPARTURE]: "Early Departure",
+      [AttendanceStatus.HALF_DAY]: "Half Day",
+      [AttendanceStatus.HOLIDAY]: "Holiday",
+      [AttendanceStatus.WEEKEND]: "Weekend",
+    };
+    
     return (
       <span
         className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${
-          statusClasses[status as keyof typeof statusClasses] || "bg-gray-100 text-gray-700"
+          statusClasses[status] || "bg-gray-100 text-gray-700"
         }`}
       >
-        {status.charAt(0).toUpperCase() + status.slice(1)}
+        {statusLabels[status] || status}
       </span>
     );
   };
@@ -41,6 +48,9 @@ export default function AttendanceOverview({ records }: AttendanceOverviewProps)
       year: "numeric",
     });
   };
+
+  // Since today's attendance is all for the same date, we can simplify the date display
+  const displayDate = records.length > 0 ? formatDate(records[0].date) : "Today";
 
   return (
     <div className="rounded-xl border border-border bg-surface">
@@ -84,8 +94,8 @@ export default function AttendanceOverview({ records }: AttendanceOverviewProps)
                 </td>
               </tr>
             ) : (
-              records.map((record, index) => (
-                <tr key={index} className="hover:bg-surface/50">
+              records.map((record) => (
+                <tr key={record.id} className="hover:bg-surface/50">
                   <td className="whitespace-nowrap px-6 py-4 text-sm text-foreground">
                     {formatDate(record.date)}
                   </td>
@@ -93,10 +103,10 @@ export default function AttendanceOverview({ records }: AttendanceOverviewProps)
                     {record.name}
                   </td>
                   <td className="whitespace-nowrap px-6 py-4 text-sm text-text-secondary">
-                    {record.checkIn || "—"}
+                    {record.checkIn === "-" ? "—" : record.checkIn}
                   </td>
                   <td className="whitespace-nowrap px-6 py-4 text-sm text-text-secondary">
-                    {record.checkOut || "—"}
+                    {record.checkOut === "-" ? "—" : record.checkOut}
                   </td>
                   <td className="whitespace-nowrap px-6 py-4 text-sm">
                     {getStatusBadge(record.status)}

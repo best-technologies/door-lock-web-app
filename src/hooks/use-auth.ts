@@ -60,7 +60,12 @@ export function useSignOut() {
       const keysToRemove: string[] = [];
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
-        if (key && (key.startsWith("react-query") || key.startsWith("tanstack-query"))) {
+        if (
+          key &&
+          (key.startsWith("react-query") ||
+            key.startsWith("tanstack-query") ||
+            key === "REACT_QUERY_OFFLINE_CACHE")
+        ) {
           keysToRemove.push(key);
         }
       }

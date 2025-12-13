@@ -1,10 +1,10 @@
 "use client";
 
-import { User } from "@/types/api";
+import { RecentUser } from "@/types/api";
 import Link from "next/link";
 
 interface UsersTableProps {
-  users: User[];
+  users: RecentUser[];
 }
 
 export default function UsersTable({ users }: UsersTableProps) {
@@ -87,7 +87,7 @@ export default function UsersTable({ users }: UsersTableProps) {
                     {user.userId}
                   </td>
                   <td className="whitespace-nowrap px-6 py-4 text-sm text-foreground">
-                    {user.firstName} {user.lastName}
+                    {user.name}
                   </td>
                   <td className="whitespace-nowrap px-6 py-4 text-sm text-text-secondary">
                     {user.email}

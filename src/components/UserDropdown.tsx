@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useAuthState } from "@/hooks/use-auth-state";
 import { useSignOut } from "@/hooks/use-auth";
+import { UserRole } from "@/types/api";
 
 export default function UserDropdown() {
   const [isOpen, setIsOpen] = useState(false);
@@ -61,13 +62,15 @@ export default function UserDropdown() {
       {isOpen && (
         <div className="absolute right-0 mt-2 w-48 rounded-lg border border-border bg-surface shadow-lg">
           <div className="py-1">
-            <Link
-              href="/dashboard"
-              onClick={() => setIsOpen(false)}
-              className="block px-4 py-2 text-sm text-foreground transition-colors hover:bg-surface/80"
-            >
-              Dashboard
-            </Link>
+            {user?.role === UserRole.ADMIN && (
+              <Link
+                href="/dashboard"
+                onClick={() => setIsOpen(false)}
+                className="block px-4 py-2 text-sm text-foreground transition-colors hover:bg-surface/80"
+              >
+                Dashboard
+              </Link>
+            )}
             <Link
               href="/profile"
               onClick={() => setIsOpen(false)}

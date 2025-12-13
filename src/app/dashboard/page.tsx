@@ -1,109 +1,265 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useAdminDashboard } from "@/hooks/use-dashboard";
+import { useAuthState } from "@/hooks/use-auth-state";
+import { UserRole } from "@/types/api";
+import { ApiError } from "@/lib/errors";
 import StatsCard from "@/components/dashboard/StatsCard";
 import UsersTable from "@/components/dashboard/UsersTable";
 import AttendanceOverview from "@/components/dashboard/AttendanceOverview";
-import { User } from "@/types/api";
-
-// Mock data - Replace with actual API calls
-const mockUsers: User[] = [
-  {
-    userId: "BTL-25-01-01",
-    firstName: "John",
-    lastName: "Doe",
-    email: "john.doe@example.com",
-    status: "active" as any,
-    role: "staff" as any,
-    department: "Engineering",
-  },
-  {
-    userId: "BTL-25-01-02",
-    firstName: "Jane",
-    lastName: "Smith",
-    email: "jane.smith@example.com",
-    status: "active" as any,
-    role: "admin" as any,
-    department: "IT",
-  },
-  {
-    userId: "BTL-25-01-03",
-    firstName: "Bob",
-    lastName: "Johnson",
-    email: "bob.johnson@example.com",
-    status: "active" as any,
-    role: "staff" as any,
-    department: "HR",
-  },
-  {
-    userId: "BTL-25-01-04",
-    firstName: "Alice",
-    lastName: "Williams",
-    email: "alice.williams@example.com",
-    status: "suspended" as any,
-    role: "intern" as any,
-    department: "Marketing",
-  },
-  {
-    userId: "BTL-25-01-05",
-    firstName: "Charlie",
-    lastName: "Brown",
-    email: "charlie.brown@example.com",
-    status: "active" as any,
-    role: "staff" as any,
-    department: "Finance",
-  },
-];
-
-const mockAttendance = [
-  {
-    date: new Date().toISOString(),
-    userId: "BTL-25-01-01",
-    name: "John Doe",
-    checkIn: "08:30 AM",
-    checkOut: "05:15 PM",
-    status: "present" as const,
-  },
-  {
-    date: new Date().toISOString(),
-    userId: "BTL-25-01-02",
-    name: "Jane Smith",
-    checkIn: "09:15 AM",
-    checkOut: null,
-    status: "late" as const,
-  },
-  {
-    date: new Date().toISOString(),
-    userId: "BTL-25-01-03",
-    name: "Bob Johnson",
-    checkIn: "08:00 AM",
-    checkOut: "05:30 PM",
-    status: "present" as const,
-  },
-];
+import ErrorAlert from "@/components/ErrorAlert";
 
 export default function DashboardPage() {
-  // Calculate stats from mock data
-  const totalUsers = mockUsers.length;
-  const totalAdmins = mockUsers.filter((u) => u.role === "admin").length;
-  const totalStaff = mockUsers.filter((u) => u.role === "staff").length;
-  const recentUsers = mockUsers.slice(0, 10);
+  const { user, isAuthenticated, hasHydrated } = useAuthState();
+  const router = useRouter();
+  const [isValidating, setIsValidating] = useState(true);
+  const { data, isLoading, error, refetch, isRefetching } = useAdminDashboard();
+
+  // Validate user access
+  useEffect(() => {
+    // Wait for hydration before validating
+    if (!hasHydrated) {
+      return;
+    }
+
+    const validateAccess = () => {
+      if (!isAuthenticated) {
+        router.push("/auth/login");
+        return;
+      }
+
+      // Check if user has admin role (required for dashboard access)
+      if (user && user.role !== UserRole.ADMIN) {
+        setIsValidating(false);
+        return;
+      }
+
+      // If authenticated and is admin, allow access
+      if (user && user.role === UserRole.ADMIN) {
+        setIsValidating(false);
+      }
+    };
+
+    // Small delay to ensure auth state is loaded
+    const timer = setTimeout(() => {
+      validateAccess();
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [isAuthenticated, hasHydrated, user, router]);
+
+  // Handle 403 Forbidden - redirect to homepage
+  useEffect(() => {
+    if (error) {
+      // Check if error is ApiError with 403 status
+      const isForbidden =
+        (error instanceof ApiError && error.statusCode === 403) ||
+        (error as any)?.statusCode === 403 ||
+        (error as any)?.message?.toLowerCase().includes("forbidden");
+      
+      if (isForbidden) {
+        // Redirect to homepage after a brief delay
+        const timer = setTimeout(() => {
+          router.push("/");
+        }, 2000);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [error, router]);
+
+  // Show loading state while hydrating or validating
+  if (!hasHydrated || isValidating || !isAuthenticated) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-primary-500 border-t-transparent"></div>
+          <p className="mt-4 text-lg font-medium text-foreground">
+            {!hasHydrated ? "Loading..." : "Validating access..."}
+          </p>
+          <p className="mt-2 text-sm text-text-secondary">
+            {!hasHydrated
+              ? "Please wait..."
+              : "Please wait while we verify your permissions"}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Check if user doesn't have admin role
+  if (user && user.role !== UserRole.ADMIN) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="w-full max-w-md space-y-6 text-center">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-danger-100">
+            <svg
+              className="h-8 w-8 text-danger-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+              />
+            </svg>
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold text-foreground">Access Denied</h2>
+            <p className="mt-2 text-text-secondary">
+              You don't have permission to access the dashboard. Admin access is required.
+            </p>
+          </div>
+          <button
+            onClick={() => router.push("/")}
+            className="inline-block rounded-lg bg-primary-500 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-primary-600"
+          >
+            Go to Home
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-[400px] items-center justify-center">
+        <div className="text-center">
+          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-primary-500 border-t-transparent"></div>
+          <p className="mt-4 text-sm text-text-secondary">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    // Check if it's a 403 Forbidden error
+    const isForbidden =
+      (error instanceof ApiError && error.statusCode === 403) ||
+      (error as any)?.statusCode === 403 ||
+      (error as any)?.message?.toLowerCase().includes("forbidden");
+
+    if (isForbidden) {
+      return (
+        <div className="flex min-h-screen items-center justify-center">
+          <div className="text-center">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-danger-100">
+              <svg
+                className="h-8 w-8 text-danger-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                />
+              </svg>
+            </div>
+            <h2 className="mt-6 text-2xl font-bold text-foreground">Access Denied</h2>
+            <p className="mt-2 text-sm text-text-secondary">
+              You don't have permission to access this page.
+            </p>
+            <p className="mt-4 text-sm text-text-secondary">
+              Redirecting to homepage...
+            </p>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
+        </div>
+        <ErrorAlert
+          message="Failed to load dashboard data. Please try again later."
+          variant="error"
+        />
+      </div>
+    );
+  }
+
+  if (!data) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
+        </div>
+        <ErrorAlert
+          message="No dashboard data available."
+          variant="warning"
+        />
+      </div>
+    );
+  }
+
+  // Ensure data structure exists with proper null checks
+  const stats = data?.stats;
+  const recentUsers = data?.recentUsers || [];
+  const todayAttendance = data?.todayAttendance || [];
+
+  if (!stats) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
+        </div>
+        <ErrorAlert
+          message="Dashboard statistics are not available. Please try again later."
+          variant="warning"
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
-        <p className="mt-2 text-sm text-text-secondary">
-          Welcome back! Here's an overview of your system.
-        </p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
+          <p className="mt-2 text-sm text-text-secondary">
+            Welcome back! Here's an overview of your system.
+          </p>
+        </div>
+        <button
+          onClick={() => refetch()}
+          disabled={isRefetching || isLoading}
+          className="flex items-center gap-2 rounded-lg border border-border bg-surface px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-surface/80 disabled:opacity-50 disabled:cursor-not-allowed"
+          title="Refresh dashboard data"
+        >
+          <svg
+            className={`h-5 w-5 ${isRefetching || isLoading ? "animate-spin" : ""}`}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+            />
+          </svg>
+          <span className="hidden sm:inline">
+            {isRefetching || isLoading ? "Refreshing..." : "Refresh"}
+          </span>
+        </button>
       </div>
 
       {/* Stats Cards */}
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         <StatsCard
           title="Total Users"
-          value={totalUsers}
+          value={stats.totalUsers?.total || 0}
           color="primary"
           icon={
             <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -115,11 +271,10 @@ export default function DashboardPage() {
               />
             </svg>
           }
-          trend={{ value: "+12%", isPositive: true }}
         />
         <StatsCard
           title="Admins"
-          value={totalAdmins}
+          value={stats.totalAdmins?.total || 0}
           color="success"
           icon={
             <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -134,7 +289,7 @@ export default function DashboardPage() {
         />
         <StatsCard
           title="Staff Members"
-          value={totalStaff}
+          value={stats.totalStaff?.total || 0}
           color="info"
           icon={
             <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -146,11 +301,10 @@ export default function DashboardPage() {
               />
             </svg>
           }
-          trend={{ value: "+5%", isPositive: true }}
         />
         <StatsCard
-          title="Active Today"
-          value={mockAttendance.filter((a) => a.status === "present").length}
+          title="Clocked In Today"
+          value={stats.clockedInToday?.total || 0}
           color="warning"
           icon={
             <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -174,7 +328,7 @@ export default function DashboardPage() {
 
         {/* Attendance Overview */}
         <div className="lg:col-span-1">
-          <AttendanceOverview records={mockAttendance} />
+          <AttendanceOverview records={todayAttendance} />
         </div>
       </div>
     </div>

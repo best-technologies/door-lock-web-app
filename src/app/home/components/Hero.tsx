@@ -1,6 +1,11 @@
+"use client";
+
 import Link from "next/link";
+import { useAuthState } from "@/hooks/use-auth-state";
 
 export default function Hero() {
+  const { isAuthenticated } = useAuthState();
+
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-primary-50 via-background to-secondary-50 py-20 sm:py-32">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -15,10 +20,10 @@ export default function Hero() {
           </p>
           <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link
-              href="/dashboard"
+              href={isAuthenticated ? "/dashboard" : "/auth/login"}
               className="rounded-lg bg-primary-500 px-8 py-3 text-base font-semibold text-white shadow-lg transition-all hover:bg-primary-600 hover:shadow-xl"
             >
-              Access Dashboard
+              {isAuthenticated ? "Access Dashboard" : "Get Started"}
             </Link>
             <Link
               href="#features"

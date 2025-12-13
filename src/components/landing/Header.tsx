@@ -24,7 +24,7 @@ export default function Header() {
         </div>
         <div className="flex items-center gap-4">
           <Link
-            href="/login"
+            href="/auth/login"
             className="hidden text-sm font-medium text-foreground transition-colors hover:text-primary-500 sm:block"
           >
             Sign In

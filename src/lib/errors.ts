@@ -68,7 +68,7 @@ export function getErrorMessage(error: unknown): string {
     ) {
       // In development, provide more helpful error message
       if (process.env.NODE_ENV === "development") {
-        return `Endpoint not found. Please verify the API endpoint exists on the server. (${message})`;
+        return `Endpoint not found. Please verify the API endpoint exists on the server. (${error.message})`;
       }
       return "The service is temporarily unavailable. Please try again later.";
     }

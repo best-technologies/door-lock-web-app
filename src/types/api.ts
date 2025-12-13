@@ -287,6 +287,175 @@ export interface UsersFilters {
   department?: Department;
 }
 
+export interface EnrollUserDto {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber?: string;
+  gender?: Gender;
+  employeeId?: string;
+  role: UserRole;
+  department?: Department;
+  accessLevel?: number;
+  allowedAccessMethods: AccessMethod[];
+  keypadPin?: string;
+  status: UserStatus;
+}
+
+export interface EnrollUserResponse {
+  success: boolean;
+  message: string;
+  data: UserDetails;
+}
+
+// RFID Tag DTOs
+export interface AddRfidTagDto {
+  tag: string;
+}
+
+export interface AddRfidTagResponse {
+  success: boolean;
+  message: string;
+  data: {
+    id: string;
+    tag: string;
+    userId: string;
+    createdAt: string;
+  };
+}
+
+// Fingerprint DTOs
+export interface RegisterFingerprintDto {
+  fingerprintId: number;
+}
+
+export interface RegisterFingerprintResponse {
+  success: boolean;
+  message: string;
+  data: {
+    id: string;
+    fingerprintId: number;
+    userId: string;
+    createdAt: string;
+  };
+}
+
+// Keypad PIN DTOs
+export interface SetKeypadPinDto {
+  pin: string;
+}
+
+export interface SetKeypadPinResponse {
+  success: boolean;
+  message: string;
+  data: {
+    userId: string;
+    updatedAt: string;
+  };
+}
+
+// Attendance Types
+export interface AttendanceRecord {
+  id: string;
+  attendanceId: string;
+  userId: string;
+  date: string;
+  checkIn: string | null;
+  checkOut: string | null;
+  status: AttendanceStatus;
+  isWorkingDay: boolean;
+  isHoliday: boolean;
+  holidayName: string | null;
+  minutesLate: number | null;
+  minutesEarly: number | null;
+  totalHours: number | null;
+  notes: string | null;
+  createdAt: string;
+  updatedAt: string;
+  user?: {
+    userId: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    department: string | null;
+  };
+}
+
+export interface AttendanceListResponse {
+  success: boolean;
+  message: string;
+  data: {
+    data: AttendanceRecord[];
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+    };
+  };
+}
+
+export interface AttendanceStats {
+  totalDays: number;
+  workingDays: number;
+  present: number;
+  absent: number;
+  late: number;
+  earlyDeparture: number;
+  halfDay: number;
+  holidays: number;
+  weekends: number;
+  attendancePercentage: number;
+  averageHoursPerDay: number;
+}
+
+export interface AttendanceStatsResponse {
+  success: boolean;
+  message: string;
+  data: AttendanceStats;
+}
+
+export interface Holiday {
+  id: string;
+  name: string;
+  date: string;
+  isRecurring: boolean;
+  description: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface HolidaysResponse {
+  success: boolean;
+  message: string;
+  data: Holiday[];
+}
+
+export interface CreateAttendanceDto {
+  userId: string;
+  date: string;
+  checkIn?: string;
+  checkOut?: string;
+  notes?: string;
+}
+
+export interface CreateHolidayDto {
+  name: string;
+  date: string;
+  isRecurring?: boolean;
+  description?: string;
+}
+
+export interface AttendanceFilters {
+  userId?: string;
+  from?: string;
+  to?: string;
+  status?: AttendanceStatus;
+  department?: Department;
+  page?: number;
+  limit?: number;
+}
+
 export interface UpdateUserDto {
   firstName?: string;
   lastName?: string;

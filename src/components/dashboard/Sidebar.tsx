@@ -93,20 +93,35 @@ export default function Sidebar() {
       <nav className="flex-1 space-y-1 px-3 py-4">
         {navigation.map((item) => {
           const isActive = pathname === item.href;
-          return (
-            <Link
-              key={item.name}
-              href={item.href}
-              className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                isActive
-                  ? "bg-primary-50 text-primary-600"
-                  : "text-text-secondary hover:bg-surface/80 hover:text-foreground"
-              }`}
-            >
-              {item.icon}
-              {item.name}
-            </Link>
-          );
+          const isEnabled = item.href === "/dashboard" || item.href === "/dashboard/users" || item.href === "/dashboard/attendance";
+          
+          if (isEnabled) {
+            return (
+              <Link
+                key={item.name}
+                href={item.href}
+                className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                  isActive
+                    ? "bg-primary-50 text-primary-600"
+                    : "text-text-secondary hover:bg-surface/80 hover:text-foreground"
+                }`}
+              >
+                {item.icon}
+                {item.name}
+              </Link>
+            );
+          } else {
+            return (
+              <div
+                key={item.name}
+                className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-text-secondary opacity-50 cursor-not-allowed"
+                title="Coming soon"
+              >
+                {item.icon}
+                {item.name}
+              </div>
+            );
+          }
         })}
       </nav>
 

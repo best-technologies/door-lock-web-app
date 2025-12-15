@@ -3,6 +3,7 @@ import {
   AdminDashboardData,
 } from "@/types/api";
 import { ApiError } from "../errors";
+import { handleUnauthorized } from "@/lib/handle-unauthorized";
 
 // Custom fetch for dashboard endpoints that return objects instead of arrays
 async function fetchDashboardData<T>(endpoint: string): Promise<T> {
@@ -23,6 +24,8 @@ async function fetchDashboardData<T>(endpoint: string): Promise<T> {
     method: "GET",
     headers,
   });
+
+  handleUnauthorized(response);
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));

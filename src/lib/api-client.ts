@@ -1,5 +1,6 @@
 import { ApiResponse } from "@/types/api";
 import { ApiError, NetworkError } from "./errors";
+import { handleUnauthorized } from "@/lib/handle-unauthorized";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "https://embedded-door-lock.onrender.com";
 const API_VERSION = process.env.NEXT_PUBLIC_API_VERSION || "/api/v1";
@@ -98,6 +99,8 @@ class ApiClient {
         error
       );
     }
+
+    handleUnauthorized(response);
 
     // Handle non-JSON responses (like HTML error pages)
     let data: ApiResponse<T>;

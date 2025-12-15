@@ -21,8 +21,8 @@ export function useUsers(filters?: UsersFilters) {
   return useQuery({
     queryKey: ["users", filters],
     queryFn: () => usersApi.getAllUsers(filters),
-    staleTime: 2 * 60 * 1000, // 2 minutes
-    gcTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 24 * 60 * 60 * 1000, // 24 hours
+    gcTime: 24 * 60 * 60 * 1000, // 24 hours
   });
 }
 

@@ -117,6 +117,13 @@ export default function AttendancePage() {
       day: "numeric",
     });
 
+    // Check if today is a weekend (Saturday = 6, Sunday = 0)
+    const dayOfWeek = today.getDay();
+    if (dayOfWeek === 0 || dayOfWeek === 6) {
+      setErrorMessage("Cannot mark weekends as holidays. Weekends are automatically handled by the system.");
+      return;
+    }
+
     setErrorMessage(null);
     setSuccessMessage(null);
 
@@ -133,6 +140,13 @@ export default function AttendancePage() {
     } catch (error) {
       setErrorMessage(getErrorMessage(error));
     }
+  };
+
+  // Check if today is a weekend
+  const isTodayWeekend = () => {
+    const today = new Date();
+    const dayOfWeek = today.getDay();
+    return dayOfWeek === 0 || dayOfWeek === 6; // Sunday = 0, Saturday = 6
   };
 
   const handleDeleteHoliday = async (holidayId: string) => {
@@ -210,6 +224,45 @@ export default function AttendancePage() {
       [AttendanceStatus.WEEKEND]: "Weekend",
     };
     return labels[status] || status;
+  };
+
+  const getRowTone = (status: AttendanceStatus): string => {
+    const tones: Record<AttendanceStatus, string> = {
+      [AttendanceStatus.PRESENT]: "bg-success-50",
+      [AttendanceStatus.ABSENT]: "bg-danger-50/60",
+      [AttendanceStatus.LATE]: "bg-warning-50",
+      [AttendanceStatus.EARLY_DEPARTURE]: "bg-warning-50/70",
+      [AttendanceStatus.HALF_DAY]: "bg-info-50",
+      [AttendanceStatus.HOLIDAY]: "bg-purple-50",
+      [AttendanceStatus.WEEKEND]: "bg-gray-50",
+    };
+    return tones[status] || "";
+  };
+
+  const getDayInfo = (dateStr: string): { label: string; className: string } => {
+    try {
+      const dateObj = new Date(dateStr);
+      if (isNaN(dateObj.getTime())) {
+        return { label: "—", className: "bg-gray-100 text-gray-600" };
+      }
+      const day = dateObj.getDay();
+      const label = dateObj.toLocaleDateString("en-US", { weekday: "short" });
+
+      if (day === 0 || day === 6) {
+        return { label, className: "bg-gray-100 text-gray-700" };
+      }
+      if (day === 5) {
+        return { label, className: "bg-warning-100 text-warning-800" };
+      }
+      return { label, className: "bg-primary-100 text-primary-800" };
+    } catch {
+      return { label: "—", className: "bg-gray-100 text-gray-600" };
+    }
+  };
+
+  const getTimeColor = (time: string | null): string => {
+    if (!time) return "text-text-secondary";
+    return "text-success-700";
   };
 
   const records = attendanceData?.data.data || [];
@@ -588,17 +641,26 @@ export default function AttendancePage() {
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-semibold text-foreground">Holidays</h2>
             <div className="flex items-center gap-2">
-              <button
-                onClick={handleMarkTodayAsHoliday}
-                disabled={createHolidayMutation.isPending}
-                className="flex items-center gap-2 rounded-lg border border-primary-500 bg-primary-50 px-4 py-2 text-sm font-medium text-primary-700 transition-colors hover:bg-primary-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                title="Mark today as a holiday instantly"
-              >
-                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                Mark Today
-              </button>
+              {isTodayWeekend() ? (
+                <div className="flex items-center gap-2 rounded-lg border border-gray-300 bg-gray-50 px-4 py-2 text-sm font-medium text-gray-600">
+                  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  Weekend
+                </div>
+              ) : (
+                <button
+                  onClick={handleMarkTodayAsHoliday}
+                  disabled={createHolidayMutation.isPending}
+                  className="flex items-center gap-2 rounded-lg border border-primary-500 bg-primary-50 px-4 py-2 text-sm font-medium text-primary-700 transition-colors hover:bg-primary-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                  title="Mark today as a holiday instantly"
+                >
+                  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Mark Today
+                </button>
+              )}
               <button
                 onClick={() => setShowHolidayForm(true)}
                 className="flex items-center gap-2 rounded-lg bg-primary-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-600"

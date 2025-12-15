@@ -8,6 +8,7 @@ import {
   AttendanceRecord,
   Holiday,
 } from "@/types/api";
+import { handleUnauthorized } from "@/lib/handle-unauthorized";
 
 const getAuthHeaders = (): Record<string, string> => {
   const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
@@ -39,9 +40,10 @@ export const attendanceApi = {
     if (filters?.limit) params.append("limit", filters.limit.toString());
 
     const queryString = params.toString();
-    const url = `${API_BASE_URL}${API_VERSION}/attendance${queryString ? `?${queryString}` : ""}`;
+    // Use Next.js API route proxy to enable server-side logging
+    const url = `/api/attendance${queryString ? `?${queryString}` : ""}`;
 
-    // Log request
+    // Log request (client-side)
     console.group(`🌐 Attendance API Request: GET /attendance`);
     console.log("📍 Full URL:", url);
     console.log("🔧 Method: GET");
@@ -57,11 +59,12 @@ export const attendanceApi = {
       headers: getAuthHeaders(),
     });
 
-    // Log response
+    // Log response (client-side)
     console.group(`✅ Attendance API Response: GET /attendance`);
     console.log("📊 Status:", response.status, response.statusText);
     console.groupEnd();
 
+    handleUnauthorized(response);
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       const errorMessage = errorData.message || `HTTP error! status: ${response.status}`;
@@ -71,22 +74,47 @@ export const attendanceApi = {
 
     const data = await response.json();
     
-    // Log response data
+    // Log response data (client-side)
     console.log("📥 Attendance API Response Data:", data);
 
-    // Handle response structure: { success, message, data: { data: [...], pagination: {...} } }
+    // Handle response structure: { success, message, data: [{ data: [...], pagination: {...} }] }
+    // OR: { success, message, data: { data: [...], pagination: {...} } }
     if (data.success && data.data) {
+      let records: any[] = [];
+      let pagination: any = {
+        page: data.page || filters?.page || 1,
+        limit: data.limit || filters?.limit || 20,
+        total: data.total || 0,
+        totalPages: data.totalPages || 0,
+      };
+
+      // Check if data.data is an array (backend returns array with one element)
+      if (Array.isArray(data.data) && data.data.length > 0) {
+        // Extract from first element: { data: [...], pagination: {...} }
+        const firstElement = data.data[0];
+        if (firstElement && firstElement.data) {
+          records = Array.isArray(firstElement.data) ? firstElement.data : [];
+          pagination = firstElement.pagination || pagination;
+        } else {
+          // If array elements are records directly
+          records = data.data;
+        }
+      } else if (data.data && typeof data.data === 'object' && !Array.isArray(data.data)) {
+        // Handle object structure: { data: { data: [...], pagination: {...} } }
+        if (Array.isArray(data.data.data)) {
+          records = data.data.data;
+          pagination = data.data.pagination || pagination;
+        } else if (Array.isArray(data.data)) {
+          records = data.data;
+        }
+      }
+
       const result = {
         success: true,
         message: data.message || "Attendance records retrieved successfully",
         data: {
-          data: Array.isArray(data.data.data) ? data.data.data : (Array.isArray(data.data) ? data.data : []),
-          pagination: data.data.pagination || {
-            page: data.page || filters?.page || 1,
-            limit: data.limit || filters?.limit || 20,
-            total: data.total || 0,
-            totalPages: data.totalPages || 0,
-          },
+          data: records,
+          pagination: pagination,
         },
       };
       console.log("✅ Processed Attendance Records:", result);
@@ -111,6 +139,7 @@ export const attendanceApi = {
       body: JSON.stringify(attendanceData),
     });
 
+    handleUnauthorized(response);
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       const errorMessage = errorData.message || `HTTP error! status: ${response.status}`;
@@ -144,13 +173,15 @@ export const attendanceApi = {
     if (to) params.append("to", to);
 
     const queryString = params.toString();
-    const url = `${API_BASE_URL}${API_VERSION}/attendance/stats${queryString ? `?${queryString}` : ""}`;
+    // Use Next.js API route proxy to enable server-side logging
+    const url = `/api/attendance/stats${queryString ? `?${queryString}` : ""}`;
 
     const response = await fetch(url, {
       method: "GET",
       headers: getAuthHeaders(),
     });
 
+    handleUnauthorized(response);
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       const errorMessage = errorData.message || `HTTP error! status: ${response.status}`;
@@ -159,11 +190,19 @@ export const attendanceApi = {
 
     const data = await response.json();
 
+    // Handle response structure: { success, message, data: {...} }
+    // OR: { success, message, data: [{...}] } (array with one element)
     if (data.success && data.data) {
+      // Check if data.data is an array (backend might return array with one element)
+      let statsData = data.data;
+      if (Array.isArray(data.data) && data.data.length > 0) {
+        statsData = data.data[0];
+      }
+
       return {
         success: true,
         message: data.message || "Attendance statistics retrieved successfully",
-        data: data.data,
+        data: statsData,
       };
     }
 
@@ -186,6 +225,7 @@ export const attendanceApi = {
       headers: getAuthHeaders(),
     });
 
+    handleUnauthorized(response);
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       const errorMessage = errorData.message || `HTTP error! status: ${response.status}`;
@@ -219,6 +259,7 @@ export const attendanceApi = {
       body: JSON.stringify(holidayData),
     });
 
+    handleUnauthorized(response);
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       const errorMessage = errorData.message || `HTTP error! status: ${response.status}`;
@@ -249,6 +290,7 @@ export const attendanceApi = {
       headers: getAuthHeaders(),
     });
 
+    handleUnauthorized(response);
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       const errorMessage = errorData.message || `HTTP error! status: ${response.status}`;

@@ -18,8 +18,8 @@ export function useAttendanceRecords(filters?: AttendanceFilters) {
       console.log("✅ useAttendanceRecords: Received data:", result);
       return result;
     },
-    staleTime: 2 * 60 * 1000, // 2 minutes
-    gcTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 24 * 60 * 60 * 1000, // 24 hours
+    gcTime: 24 * 60 * 60 * 1000, // 24 hours
     enabled: true, // Always enabled
   });
 }
@@ -28,8 +28,8 @@ export function useAttendanceStats(userId?: string, from?: string, to?: string) 
   return useQuery({
     queryKey: ["attendance", "stats", userId, from, to],
     queryFn: () => attendanceApi.getAttendanceStats(userId, from, to),
-    staleTime: 2 * 60 * 1000, // 2 minutes
-    gcTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 24 * 60 * 60 * 1000, // 24 hours
+    gcTime: 24 * 60 * 60 * 1000, // 24 hours
   });
 }
 
@@ -37,8 +37,8 @@ export function useHolidays(from?: string, to?: string) {
   return useQuery({
     queryKey: ["attendance", "holidays", from, to],
     queryFn: () => attendanceApi.getHolidays(from, to),
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
+    staleTime: 24 * 60 * 60 * 1000, // 24 hours
+    gcTime: 24 * 60 * 60 * 1000, // 24 hours
   });
 }
 

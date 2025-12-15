@@ -228,33 +228,87 @@ GET /attendance?userId=user-123&from=2025-01-01&to=2025-01-31&status=present
 {
   "success": true,
   "message": "Attendance records retrieved successfully",
-  "data": {
-    "data": [
-      {
-        "id": "...",
-        "attendanceId": "ATT-2025-01-15-user-id",
-        "userId": "user-id",
-        "date": "2025-01-15T00:00:00Z",
-        "checkIn": "2025-01-15T08:30:00Z",
-        "checkOut": "2025-01-15T17:00:00Z",
-        "status": "present",
-        "minutesLate": 30,
-        "totalHours": 8.5,
-        "user": {
-          "userId": "BTL-25-11-13",
-          "firstName": "John",
-          "lastName": "Doe",
-          "email": "john@example.com",
-          "department": "Engineering"
-        }
+  "data": [
+    {
+      "id": "...",
+      "attendanceId": "ATT-2025-01-15-user-id",
+      "userId": "user-id",
+      "date": "2025-01-15T00:00:00Z",
+      "checkIn": "2025-01-15T08:30:00Z",
+      "checkOut": "2025-01-15T17:00:00Z",
+      "status": "present",
+      "minutesLate": 30,
+      "totalHours": 8.5,
+      "user": {
+        "userId": "BTL-25-11-13",
+        "firstName": "John",
+        "lastName": "Doe",
+        "email": "john@example.com",
+        "department": "Engineering"
       }
-    ],
-    "pagination": {
-      "page": 1,
-      "limit": 20,
-      "total": 25,
-      "totalPages": 2
     }
+  ],
+  "total": 25,
+  "page": 1,
+  "limit": 20,
+  "totalPages": 2,
+  "timestamp": {
+    "date": "2025-01-15",
+    "time": "2025-01-15T08:30:00.000Z"
+  }
+}
+```
+
+**Default behavior (no filters):** If you call `GET /attendance` without any filter parameters, the API returns records for the current day by default (midnight-to-midnight based on server time) and includes the current date/time in the `timestamp` object.
+
+### 3. Get Attendance History for a User
+
+Retrieve paginated attendance history for a specific user with optional filters.
+
+**Endpoint:** `GET /attendance/user/{userId}/history`
+
+**Path Parameters:**
+- `userId` (required) - User ID whose attendance history you want
+
+**Query Parameters (optional):**
+- `from` - Start date (ISO date string)
+- `to` - End date (ISO date string)
+- `status` - Attendance status filter
+- `page` - Page number (default: 1)
+- `limit` - Items per page (default: 20)
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Attendance history retrieved successfully",
+  "data": [
+    {
+      "id": "...",
+      "attendanceId": "ATT-2025-01-15-user-id",
+      "userId": "user-id",
+      "date": "2025-01-15T00:00:00Z",
+      "checkIn": "2025-01-15T08:30:00Z",
+      "checkOut": "2025-01-15T17:00:00Z",
+      "status": "present",
+      "minutesLate": 30,
+      "totalHours": 8.5,
+      "user": {
+        "userId": "BTL-25-11-13",
+        "firstName": "John",
+        "lastName": "Doe",
+        "email": "john@example.com",
+        "department": "Engineering"
+      }
+    }
+  ],
+  "total": 25,
+  "page": 1,
+  "limit": 20,
+  "totalPages": 2,
+  "timestamp": {
+    "date": "2025-01-15",
+    "time": "2025-01-15T08:30:00.000Z"
   }
 }
 ```

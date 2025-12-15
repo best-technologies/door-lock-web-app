@@ -17,6 +17,7 @@ import {
   SetKeypadPinResponse,
 } from "@/types/api";
 import { ApiError } from "@/lib/errors";
+import { handleUnauthorized } from "@/lib/handle-unauthorized";
 
 export const usersApi = {
   /**
@@ -50,6 +51,8 @@ export const usersApi = {
       method: "GET",
       headers,
     });
+
+    handleUnauthorized(response);
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
@@ -110,6 +113,8 @@ export const usersApi = {
       body: JSON.stringify(updateData),
     });
 
+    handleUnauthorized(response);
+
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       const errorMessage = errorData.message || `HTTP error! status: ${response.status}`;
@@ -155,6 +160,8 @@ export const usersApi = {
       headers,
       body: JSON.stringify(updateData),
     });
+
+    handleUnauthorized(response);
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
@@ -209,6 +216,8 @@ export const usersApi = {
       headers,
       body: JSON.stringify(userData),
     });
+
+    handleUnauthorized(response);
 
     // Log response
     console.group(`✅ Users API Response: POST /admin/users-management`);
@@ -268,6 +277,8 @@ export const usersApi = {
       body: JSON.stringify(tagData),
     });
 
+    handleUnauthorized(response);
+
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       const errorMessage = errorData.message || `HTTP error! status: ${response.status}`;
@@ -320,6 +331,8 @@ export const usersApi = {
       body: JSON.stringify(fingerprintData),
     });
 
+    handleUnauthorized(response);
+
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       const errorMessage = errorData.message || `HTTP error! status: ${response.status}`;
@@ -368,6 +381,8 @@ export const usersApi = {
       headers,
       body: JSON.stringify(pinData),
     });
+
+    handleUnauthorized(response);
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));

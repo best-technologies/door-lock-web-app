@@ -46,7 +46,6 @@ export default function UsersTabComponent() {
     email: "",
     phoneNumber: "",
     gender: "" as Gender | "",
-    employeeId: "",
     role: UserRole.STAFF as UserRole,
     department: "" as Department | "",
     accessLevel: 1,
@@ -191,7 +190,6 @@ export default function UsersTabComponent() {
         email: enrollForm.email,
         phoneNumber: enrollForm.phoneNumber || undefined,
         gender: enrollForm.gender || undefined,
-        employeeId: enrollForm.employeeId || undefined,
         role: enrollForm.role,
         department: enrollForm.department || undefined,
         accessLevel: enrollForm.accessLevel,
@@ -207,7 +205,6 @@ export default function UsersTabComponent() {
         email: "",
         phoneNumber: "",
         gender: "",
-        employeeId: "",
         role: UserRole.STAFF,
         department: "",
         accessLevel: 1,
@@ -1669,21 +1666,6 @@ export default function UsersTabComponent() {
                     <option value={Gender.F}>Female</option>
                   </select>
                 </div>
-                {/* Employee ID */}
-                <div>
-                  <label htmlFor="employeeId" className="block text-sm font-medium text-foreground mb-1">
-                    Employee ID
-                  </label>
-                  <input
-                    type="text"
-                    id="employeeId"
-                    name="employeeId"
-                    value={enrollForm.employeeId}
-                    onChange={handleEnrollFormChange}
-                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
-                    placeholder="EMP001"
-                  />
-                </div>
                 {/* Role */}
                 <div>
                   <label htmlFor="role" className="block text-sm font-medium text-foreground mb-1">
@@ -1824,7 +1806,6 @@ export default function UsersTabComponent() {
                       email: "",
                       phoneNumber: "",
                       gender: "",
-                      employeeId: "",
                       role: UserRole.STAFF,
                       department: "",
                       accessLevel: 1,

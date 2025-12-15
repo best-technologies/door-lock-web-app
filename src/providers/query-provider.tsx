@@ -12,8 +12,8 @@ export function QueryProvider({ children }: { children: React.ReactNode }) {
       new QueryClient({
         defaultOptions: {
           queries: {
-            staleTime: 5 * 60 * 1000, // 5 minutes - data is considered fresh for 5 minutes
-            gcTime: 10 * 60 * 1000, // 10 minutes - cache persists for 10 minutes (formerly cacheTime)
+            staleTime: 24 * 60 * 60 * 1000, // 24 hours - data is considered fresh for 24 hours
+            gcTime: 24 * 60 * 60 * 1000, // 24 hours - cache persists for 24 hours (formerly cacheTime)
             refetchOnMount: false, // Don't refetch on mount if data is fresh
             refetchOnWindowFocus: false, // Don't refetch on window focus
             refetchOnReconnect: false, // Don't refetch on reconnect
@@ -53,7 +53,7 @@ export function QueryProvider({ children }: { children: React.ReactNode }) {
       client={queryClient}
       persistOptions={{
         persister,
-        maxAge: 10 * 60 * 1000, // 10 minutes - same as gcTime
+        maxAge: 24 * 60 * 60 * 1000, // 24 hours - same as gcTime
         buster: "", // Change this to invalidate cache when needed
       }}
     >

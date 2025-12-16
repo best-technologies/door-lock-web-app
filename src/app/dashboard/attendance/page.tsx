@@ -266,6 +266,11 @@ export default function AttendancePage() {
   };
 
   const records = attendanceData?.data.data || [];
+  const sortedRecords = [...records].sort((a, b) => {
+    const aTime = new Date(a.checkIn ?? a.date).getTime();
+    const bTime = new Date(b.checkIn ?? b.date).getTime();
+    return bTime - aTime; // latest check-in first
+  });
   const pagination = attendanceData?.data.pagination || { page: 1, limit: 20, total: 0, totalPages: 0 };
   const stats = statsData?.data;
   const holidays = holidaysData?.data || [];
@@ -490,7 +495,7 @@ export default function AttendancePage() {
                         </td>
                       </tr>
                     ) : (
-                      records.map((record) => (
+                      sortedRecords.map((record) => (
                         <tr key={record.id} className="hover:bg-surface/50 transition-colors">
                           <td className="px-4 py-4 whitespace-nowrap text-sm text-foreground">
                             {formatDate(record.date)}

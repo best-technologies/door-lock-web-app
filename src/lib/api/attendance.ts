@@ -1,10 +1,12 @@
 import {
   AttendanceListResponse,
   AttendanceStatsResponse,
+  AttendanceHistoryResponse,
   HolidaysResponse,
   CreateAttendanceDto,
   CreateHolidayDto,
   AttendanceFilters,
+  AttendanceHistoryFilters,
   AttendanceRecord,
   Holiday,
 } from "@/types/api";
@@ -123,6 +125,65 @@ export const attendanceApi = {
 
     console.error("❌ Invalid response structure:", data);
     throw new Error(data.message || "Failed to fetch attendance records");
+  },
+
+  /**
+   * Get attendance history for a specific user
+   */
+  getAttendanceHistory: async (
+    userId: string,
+    filters?: AttendanceHistoryFilters
+  ): Promise<AttendanceHistoryResponse> => {
+    const params = new URLSearchParams();
+    if (filters?.from) params.append("from", filters.from);
+    if (filters?.to) params.append("to", filters.to);
+    if (filters?.status) params.append("status", filters.status);
+    if (filters?.page) params.append("page", filters.page.toString());
+    if (filters?.limit) params.append("limit", filters.limit.toString());
+
+    const queryString = params.toString();
+    const url = `/api/attendance/user/${userId}/history${queryString ? `?${queryString}` : ""}`;
+
+    const response = await fetch(url, {
+      method: "GET",
+      headers: getAuthHeaders(),
+    });
+
+    handleUnauthorized(response);
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      const errorMessage = errorData.message || `HTTP error! status: ${response.status}`;
+      throw new Error(errorMessage);
+    }
+
+    const data = await response.json();
+
+    // Response shape (per docs):
+    // {
+    //   success: true,
+    //   message: "...",
+    //   data: [...records],
+    //   total, page, limit, totalPages,
+    //   timestamp: { date, time }
+    // }
+    const records = Array.isArray(data.data) ? data.data : [];
+    const pagination = {
+      page: data.page || filters?.page || 1,
+      limit: data.limit || filters?.limit || 20,
+      total: data.total || 0,
+      totalPages: data.totalPages || 0,
+    };
+
+    return {
+      success: !!data.success,
+      message: data.message || "Attendance history retrieved successfully",
+      data: {
+        data: records,
+        pagination,
+      },
+      timestamp: data.timestamp,
+    };
   },
 
   /**

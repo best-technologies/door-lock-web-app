@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { attendanceApi } from "@/lib/api/attendance";
 import {
   AttendanceFilters,
+  AttendanceHistoryFilters,
   CreateAttendanceDto,
   CreateHolidayDto,
   AttendanceRecord,
@@ -37,6 +38,16 @@ export function useHolidays(from?: string, to?: string) {
   return useQuery({
     queryKey: ["attendance", "holidays", from, to],
     queryFn: () => attendanceApi.getHolidays(from, to),
+    staleTime: 24 * 60 * 60 * 1000, // 24 hours
+    gcTime: 24 * 60 * 60 * 1000, // 24 hours
+  });
+}
+
+export function useAttendanceHistory(userId: string, filters?: AttendanceHistoryFilters) {
+  return useQuery({
+    queryKey: ["attendance", "history", userId, filters],
+    queryFn: () => attendanceApi.getAttendanceHistory(userId, filters),
+    enabled: !!userId,
     staleTime: 24 * 60 * 60 * 1000, // 24 hours
     gcTime: 24 * 60 * 60 * 1000, // 24 hours
   });

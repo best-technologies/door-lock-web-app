@@ -8,6 +8,14 @@ interface AttendanceOverviewProps {
 }
 
 export default function AttendanceOverview({ records }: AttendanceOverviewProps) {
+  const sortedRecords = [...records].sort((a, b) => {
+    const aTime =
+      a.checkIn && a.checkIn !== "-" ? new Date(a.checkIn).getTime() : new Date(a.date).getTime();
+    const bTime =
+      b.checkIn && b.checkIn !== "-" ? new Date(b.checkIn).getTime() : new Date(b.date).getTime();
+    return bTime - aTime; // latest check-in first
+  });
+
   const getStatusBadge = (status: AttendanceStatus) => {
     const statusClasses: Record<AttendanceStatus, string> = {
       [AttendanceStatus.PRESENT]: "bg-success-100 text-success-700",
@@ -87,14 +95,14 @@ export default function AttendanceOverview({ records }: AttendanceOverviewProps)
             </tr>
           </thead>
           <tbody className="divide-y divide-border bg-surface">
-            {records.length === 0 ? (
+          {sortedRecords.length === 0 ? (
               <tr>
                 <td colSpan={5} className="px-6 py-8 text-center text-sm text-text-secondary">
                   No attendance records for today
                 </td>
               </tr>
             ) : (
-              records.map((record) => (
+              sortedRecords.map((record) => (
                 <tr key={record.id} className="hover:bg-surface/50">
                   <td className="whitespace-nowrap px-6 py-4 text-sm text-foreground">
                     {formatDate(record.date)}

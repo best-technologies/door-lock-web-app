@@ -415,6 +415,32 @@ export interface AttendanceStatsResponse {
   data: AttendanceStats;
 }
 
+export interface AttendanceHistoryFilters {
+  from?: string;
+  to?: string;
+  status?: AttendanceStatus;
+  page?: number;
+  limit?: number;
+}
+
+export interface AttendanceHistoryResponse {
+  success: boolean;
+  message: string;
+  data: {
+    data: AttendanceRecord[];
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+    };
+  };
+  timestamp?: {
+    date?: string;
+    time?: string;
+  };
+}
+
 export interface Holiday {
   id: string;
   name: string;

@@ -229,6 +229,14 @@ export default function DashboardPage() {
           <p className="mt-2 text-sm text-text-secondary">
             Welcome back! Here's an overview of your system.
           </p>
+          <p className="mt-1 text-sm font-medium text-foreground">
+            {new Date().toLocaleDateString("en-US", {
+              weekday: "short",
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+            })}
+          </p>
         </div>
         <button
           onClick={() => refetch()}

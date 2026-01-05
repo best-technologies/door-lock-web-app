@@ -117,7 +117,14 @@ function getUserFriendlyMessage(
     if (lowerMessage.includes("suspended")) {
       return "Your account has been suspended. Please contact support.";
     }
-    if (lowerMessage.includes("invalid") || lowerMessage.includes("password")) {
+    if (
+      lowerMessage.includes("invalid") ||
+      lowerMessage.includes("password") ||
+      lowerMessage.includes("user not found") ||
+      lowerMessage.includes("user does not exist") ||
+      lowerMessage.includes("does not exist") ||
+      lowerMessage.includes("sign in failed")
+    ) {
       return "Invalid email or password. Please check your credentials and try again.";
     }
     return "Invalid email or password. Please check your credentials and try again.";
@@ -161,6 +168,15 @@ function getUserFriendlyMessage(
 
   // Handle specific error messages
   if (lowerMessage.includes("invalid email or password")) {
+    return "Invalid email or password. Please check your credentials and try again.";
+  }
+
+  if (
+    lowerMessage.includes("user not found") ||
+    lowerMessage.includes("user does not exist") ||
+    lowerMessage.includes("does not exist") ||
+    lowerMessage.includes("sign in failed")
+  ) {
     return "Invalid email or password. Please check your credentials and try again.";
   }
 

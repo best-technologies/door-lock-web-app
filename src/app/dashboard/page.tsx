@@ -221,46 +221,86 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Page Header */}
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
-          <p className="mt-2 text-sm text-text-secondary">
-            Welcome back! Here's an overview of your system.
-          </p>
-          <p className="mt-1 text-sm font-medium text-foreground">
-            {new Date().toLocaleDateString("en-US", {
-              weekday: "short",
-              month: "short",
-              day: "numeric",
-              year: "numeric",
-            })}
-          </p>
-        </div>
-        <button
-          onClick={() => refetch()}
-          disabled={isRefetching || isLoading}
-          className="flex items-center gap-2 rounded-lg border border-border bg-surface px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-surface/80 disabled:opacity-50 disabled:cursor-not-allowed"
-          title="Refresh dashboard data"
-        >
-          <svg
-            className={`h-5 w-5 ${isRefetching || isLoading ? "animate-spin" : ""}`}
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+    <div className="space-y-8">
+      {/* Page Header with Gradient */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary-500 via-primary-600 to-secondary-500 p-8 shadow-xl">
+        {/* Decorative elements */}
+        <div className="absolute right-0 top-0 h-64 w-64 rounded-full bg-white/10 blur-3xl"></div>
+        <div className="absolute bottom-0 left-0 h-48 w-48 rounded-full bg-secondary-400/20 blur-2xl"></div>
+        
+        <div className="relative flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+          <div className="text-white">
+            <div className="flex items-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm">
+                <svg
+                  className="h-7 w-7 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+                  />
+                </svg>
+              </div>
+              <div>
+                <h1 className="text-4xl font-bold text-white">Dashboard</h1>
+                <p className="mt-1 text-primary-100">
+                  Welcome back! Here's an overview of your system.
+                </p>
+              </div>
+            </div>
+            <div className="mt-4 flex items-center gap-2 rounded-lg bg-white/10 px-4 py-2 backdrop-blur-sm">
+              <svg
+                className="h-5 w-5 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                />
+              </svg>
+              <p className="text-sm font-semibold text-white">
+                {new Date().toLocaleDateString("en-US", {
+                  weekday: "short",
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                })}
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => refetch()}
+            disabled={isRefetching || isLoading}
+            className="flex items-center gap-2 rounded-xl bg-white/20 px-5 py-3 text-sm font-semibold text-white backdrop-blur-sm transition-all hover:bg-white/30 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+            title="Refresh dashboard data"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-            />
-          </svg>
-          <span className="hidden sm:inline">
-            {isRefetching || isLoading ? "Refreshing..." : "Refresh"}
-          </span>
-        </button>
+            <svg
+              className={`h-5 w-5 ${isRefetching || isLoading ? "animate-spin" : ""}`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+              />
+            </svg>
+            <span className="hidden sm:inline">
+              {isRefetching || isLoading ? "Refreshing..." : "Refresh"}
+            </span>
+          </button>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -328,7 +368,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Tables Grid */}
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-8 lg:grid-cols-2">
         {/* Users Table */}
         <div className="lg:col-span-1">
           <UsersTable users={recentUsers} />
